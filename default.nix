@@ -20,7 +20,7 @@
           ps.pydantic
           ps.pydantic-settings
           ps.httpx
-        ]
+        ] ++ ps.fastapi.optional-dependencies.standard
       ))
       pkgs.jq
       pkgs.nodejs
