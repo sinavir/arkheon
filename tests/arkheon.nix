@@ -11,10 +11,16 @@ _: {
         domain = "arkheon";
       };
       networking.firewall.allowedTCPPorts = [ 80 ];
+      environment.systemPackages = [
+        pkgs.jq
+      ];
       #specialisation.updatedMachine.configuration.environment.systemPackages = [ pkgs.hello ];
     };
 
   testScript = ''
+    import json
+    import sys
+
     start_all()
     machine.wait_for_unit("arkheon.service")
     machine.wait_for_unit("network.target")
@@ -29,5 +35,14 @@ _: {
         machine.wait_until_succeeds(
             "curl -sSfL http://[::1]/api/machines"
         )
+        machine.succeed(
+            'ARKHEON_HOST="http://[::1]/api" ARKHEON_OPERATOR="testop" ${../upload-current-system.sh}'
+        )
+        machines_json = json.loads(machine.succeed(
+            "curl -sSfL http://[::1]/api/machines"
+        ))
+        if len(machines_json) != 1:
+            sys.exit(1)
+        print(machines_json)
   '';
 }
